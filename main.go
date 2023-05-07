@@ -105,5 +105,6 @@ func main() {
 			continue
 		}
 		conn.WriteToUDP(bodyBytes, addr)
+		resp.Body.Close()
 	}
 }
