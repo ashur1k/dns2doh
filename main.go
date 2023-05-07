@@ -88,11 +88,11 @@ func main() {
 			log.Println(err)
 			continue
 		}
-		defer resp.Body.Close()
 
 		// Если ответ не успешный, возвращаем ошибку
 		if resp.StatusCode != http.StatusOK {
 			log.Println("DNS-over-HTTPS request failed")
+			resp.Body.Close()
 			continue
 		}
 
@@ -101,6 +101,7 @@ func main() {
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Println(err)
+			resp.Body.Close()
 			continue
 		}
 		conn.WriteToUDP(bodyBytes, addr)
