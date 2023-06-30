@@ -39,6 +39,11 @@ func main() {
 	log.Println("Listening on", localAddr.IP.String())
 
 	defer conn.Close()
+
+	// Создаём объект клиента
+	client := &http.Client{}
+	defer client.CloseIdleConnections()
+
 	for {
 		buf := make([]byte, 512)
 		n, addr, err := conn.ReadFromUDP(buf)
@@ -50,8 +55,7 @@ func main() {
 		// URL пользовательского DNS-over-HTTPS сервера
 		serverURL := *doh
 
-		// Создаем объект клиента с заголовками X-Forwarded-For, X-Real-IP и другие
-		client := &http.Client{}
+		// Создаём запрос с заголовками X-Forwarded-For, X-Real-IP и другие
 		var req *http.Request
 		var errReq error
 		if *useGet {
@@ -86,6 +90,7 @@ func main() {
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Println(err)
+			resp.Body.Close()
 			continue
 		}
 
@@ -97,7 +102,6 @@ func main() {
 		}
 
 		// Читаем ответ и отправляем его в ответ на DNS запрос
-		buf = make([]byte, 512)
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Println(err)
