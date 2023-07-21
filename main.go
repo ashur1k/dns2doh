@@ -90,7 +90,6 @@ func main() {
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Println(err)
-			resp.Body.Close()
 			continue
 		}
 
@@ -101,14 +100,16 @@ func main() {
 			continue
 		}
 
-		// Читаем ответ и отправляем его в ответ на DNS запрос
+		// Читаем ответ
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Println(err)
 			resp.Body.Close()
 			continue
 		}
-		conn.WriteToUDP(bodyBytes, addr)
 		resp.Body.Close()
+
+		// Отправляем ответ обратно клиенту, который сделал DNS запрос
+		conn.WriteToUDP(bodyBytes, addr)
 	}
 }
