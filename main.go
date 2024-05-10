@@ -44,6 +44,9 @@ func main() {
 	client := &http.Client{}
 	defer client.CloseIdleConnections()
 
+	// URL пользовательского DNS-over-HTTPS сервера
+	serverURL := *doh
+
 	for {
 		buf := make([]byte, 512)
 		n, addr, err := conn.ReadFromUDP(buf)
@@ -75,9 +78,10 @@ func main() {
 			req, errReq = http.NewRequest("POST", serverURL, bytes.NewBuffer(buf[:n]))
 
 		}
+
 		if errReq != nil {
 			fmt.Println("Error creating request:", err)
-			return
+			continue
 		}
 		req.Header.Set("X-Forwarded-For", addr.IP.String())
 		req.Header.Set("X-Real-IP", addr.IP.String())
@@ -95,7 +99,10 @@ func main() {
 
 		// Если ответ не успешный, возвращаем ошибку
 		if resp.StatusCode != http.StatusOK {
-			log.Println("DNS-over-HTTPS request failed")
+			// Если ответ не 403, то выводим ошибку
+			if resp.StatusCode != http.StatusForbidden {
+				log.Println("DNS-over-HTTPS request failed")
+			}
 			resp.Body.Close()
 			continue
 		}
