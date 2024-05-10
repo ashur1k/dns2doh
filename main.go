@@ -151,7 +151,15 @@ func main() {
 		}
 
 		// Извлекаем тип запроса DNS
-		queryTypeBytes := binary.BigEndian.Uint16(buf[n-4 : n-2])
+		offset := 12
+		for i, value := range buf[12:n] {
+			log.Println(i, value)
+			if value == byte(0) {
+				offset = offset + i + 1
+				break
+			}
+		}
+		queryTypeBytes := binary.BigEndian.Uint16(buf[offset : offset+2])
 		queryType, ok := QueryType(queryTypeBytes)
 
 		// Задаем параметры запроса
