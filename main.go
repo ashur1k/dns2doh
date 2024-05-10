@@ -153,7 +153,6 @@ func main() {
 		// Извлекаем тип запроса DNS
 		offset := 12
 		for i, value := range buf[12:n] {
-			log.Println(i, value)
 			if value == byte(0) {
 				offset = offset + i + 1
 				break
