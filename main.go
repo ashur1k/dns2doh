@@ -150,21 +150,24 @@ func main() {
 			continue
 		}
 
-		// Извлекаем тип запроса DNS
-		offset := 12
-		for i, value := range buf[12:n] {
-			if value == byte(0) {
-				offset = offset + i + 1
-				break
-			}
-		}
-		queryTypeBytes := binary.BigEndian.Uint16(buf[offset : offset+2])
-		queryType, ok := QueryType(queryTypeBytes)
-
-		// Задаем параметры запроса
 		params := url.Values{}
-		if ok {
-			params.Add("queryType", queryType)
+
+		if n > 12 {
+			// Извлекаем тип запроса DNS
+			offset := 12
+			for i, value := range buf[12:n] {
+				if value == byte(0) {
+					offset = offset + i + 1
+					break
+				}
+			}
+			queryTypeBytes := binary.BigEndian.Uint16(buf[offset : offset+2])
+			queryType, ok := QueryType(queryTypeBytes)
+
+			// Задаем параметры запроса
+			if ok {
+				params.Add("queryType", queryType)
+			}
 		}
 
 		// Создаём запрос с заголовками X-Forwarded-For, X-Real-IP и другие
